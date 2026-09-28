@@ -28,7 +28,7 @@ docker-compose.override.yml
 .env
 
 # Generated media files (opcional, si no deben estar versionados)
-mediafiles/
+#mediafiles/
 
 # Temporary files
 *.tmp

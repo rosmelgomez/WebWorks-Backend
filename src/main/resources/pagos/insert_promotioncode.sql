@@ -1,0 +1,3 @@
+-- Codigos de promocion de ejemplo. discountpercentage es una fraccion (0.2 = 20%).
+INSERT INTO public.promotioncode (code, datestart, dateend, discountpercentage, maxpurchaseamount, maxusagecount, minpurchaseamount, status) SELECT 'BIENVENIDO20', NOW() - INTERVAL '1 day', NOW() + INTERVAL '1 year', 0.2, 100, 100, 0, 'ACTIVE' WHERE NOT EXISTS (SELECT 1 FROM public.promotioncode WHERE code = 'BIENVENIDO20');
+INSERT INTO public.promotioncode (code, datestart, dateend, discountpercentage, maxpurchaseamount, maxusagecount, minpurchaseamount, status) SELECT 'UPC10', NOW() - INTERVAL '1 day', NOW() + INTERVAL '1 year', 0.1, 100, 50, 0, 'ACTIVE' WHERE NOT EXISTS (SELECT 1 FROM public.promotioncode WHERE code = 'UPC10');

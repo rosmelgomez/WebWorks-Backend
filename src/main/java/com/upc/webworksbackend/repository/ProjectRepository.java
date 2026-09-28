@@ -10,6 +10,9 @@ import java.util.List;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<ProjectModel,Integer> {
+    List<ProjectModel> findAllByRepositoryProject_Id(Integer repositoryId);
+    long countByRepositoryProject_Id(Integer repositoryId);
+    long countByRepositoryProject_UserRepository_Id(Integer userId);
 //proyectodeveloperPersONA
     @Query(value = "select pr.id, pe.id  \n" +
             "from project pr\n" +

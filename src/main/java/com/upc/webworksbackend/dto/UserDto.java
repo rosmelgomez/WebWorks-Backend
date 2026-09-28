@@ -1,4 +1,6 @@
 package com.upc.webworksbackend.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.Date;
@@ -16,7 +18,13 @@ public class UserDto {
     private String phone;
     private String email;
     private String username;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String currentPassword;
+
     private String photo;
     private String rol;
 
@@ -50,6 +58,14 @@ public class UserDto {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getCurrentPassword() {
+        return currentPassword;
+    }
+
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
     }
 
     public String getUsername() {

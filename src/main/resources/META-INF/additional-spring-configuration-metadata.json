@@ -1,8 +1,38 @@
 {
   "properties": [
     {
-      "name": "spring.devtools.restart.log-condition-evaluation-delta",
+      "name": "spring.datasource.first.jdbc-url",
       "type": "java.lang.String",
-      "description": "Description for spring.devtools.restart.log-condition-evaluation-delta."
-  }
-] }
+      "description": "Description for spring.datasource.first.jdbc-url."
+    },
+    {
+      "name": "spring.datasource.first.username",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.first.username."
+    },
+    {
+      "name": "spring.datasource.first.password",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.first.password."
+    },
+    {
+      "name": "spring.datasource.first.driver-class-name",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.first.driver-class-name."
+    },
+    {
+      "name": "spring.datasource.first.jpa.hibernate.ddl-auto",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.first.jpa.hibernate.ddl-auto."
+    },
+    {
+      "name": "spring.datasource.first.jpa.show-sql",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.first.jpa.show-sql."
+    },
+    {
+      "name": "app.security.cookie.api.path",
+      "type": "java.lang.String",
+      "description": "Description for app.security.cookie.api.path."
+    }
+  ] }

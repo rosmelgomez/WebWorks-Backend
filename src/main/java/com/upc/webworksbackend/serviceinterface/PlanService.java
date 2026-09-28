@@ -1,6 +1,7 @@
 package com.upc.webworksbackend.serviceinterface;
 
 import com.upc.webworksbackend.dto.PlanDto;
+import com.upc.webworksbackend.exception.NotFoundException;
 import com.upc.webworksbackend.model.PlanModel;
 import com.upc.webworksbackend.repository.PlanRepository;
 import org.modelmapper.ModelMapper;
@@ -24,7 +25,8 @@ public class PlanService {
     }
 
     public PlanDto getPlanById(Integer id){
-        PlanModel planModel = planRepository.findById(id).orElse(null);
+        PlanModel planModel = planRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Plan no encontrado con id: " + id));
         ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(planModel , PlanDto.class);
     }

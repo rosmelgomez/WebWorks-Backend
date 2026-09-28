@@ -1,6 +1,7 @@
 package com.upc.webworksbackend.serviceinterface;
 
 import com.upc.webworksbackend.dto.MethodPaymentDto;
+import com.upc.webworksbackend.exception.NotFoundException;
 import com.upc.webworksbackend.model.MethodPaymentModel;
 import com.upc.webworksbackend.model.MoneyModel;
 import com.upc.webworksbackend.model.UserModel;
@@ -11,75 +12,80 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-
 import java.util.List;
 
 @Service
 public class MethodPaymentService {
- final MethodPaymentRepository methodPaymentRepository;
- final UserRepository userRepository;
- final MoneyRepository moneyRepository;
+    final MethodPaymentRepository methodPaymentRepository;
+    final UserRepository userRepository;
+    final MoneyRepository moneyRepository;
 
- public MethodPaymentService(MethodPaymentRepository methodPaymentRepository, UserRepository userRepository, MoneyRepository moneyRepository) {
+    public MethodPaymentService(MethodPaymentRepository methodPaymentRepository, UserRepository userRepository, MoneyRepository moneyRepository) {
         this.methodPaymentRepository = methodPaymentRepository;
         this.userRepository = userRepository;
         this.moneyRepository = moneyRepository;
     }
 
+    public Boolean addMethodPayment(MethodPaymentDto methodPaymentDto){
+        UserModel personModel= userRepository.findById(methodPaymentDto.getId_user())
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id: " + methodPaymentDto.getId_user()));
+        MoneyModel moneyModel= moneyRepository.findById(methodPaymentDto.getId_money())
+                .orElseThrow(() -> new NotFoundException("Moneda no encontrada con id: " + methodPaymentDto.getId_money()));
 
-public Boolean addMethodPayment(MethodPaymentDto methodPaymentDto){
-     UserModel personModel= userRepository.findById(methodPaymentDto.getId_user()).orElse(null);
-     MoneyModel moneyModel=moneyRepository.findById(methodPaymentDto.getId_money()).orElse(null);
-     if(personModel!=null && moneyModel!=null){
-      ModelMapper modelMapper = new ModelMapper();
-      MethodPaymentModel methodPaymentModel = modelMapper.map(methodPaymentDto, MethodPaymentModel.class);
-      methodPaymentModel.setUserMethodPayment(personModel);
-      methodPaymentModel.setMoneyMethodPayment(moneyModel);
-      methodPaymentRepository.save(methodPaymentModel);
-      return true;
-     }
-     return false;
-}
+        ModelMapper modelMapper = new ModelMapper();
+        MethodPaymentModel methodPaymentModel = modelMapper.map(methodPaymentDto, MethodPaymentModel.class);
+        methodPaymentModel.setId(null);
+        methodPaymentModel.setUserMethodPayment(personModel);
+        methodPaymentModel.setMoneyMethodPayment(moneyModel);
+        methodPaymentRepository.save(methodPaymentModel);
+        return true;
+    }
 
-public List<MethodPaymentDto> methodsPaymentByUser(Integer id){
-   List<MethodPaymentModel> methodPaymentModels=methodPaymentRepository.findAll();
-   List<MethodPaymentDto> methodPaymentDtos=new ArrayList<>();
-   for (MethodPaymentModel methodPaymentModel : methodPaymentModels) {
-      if(methodPaymentModel.getUserMethodPayment().getId().equals(id)){
-      ModelMapper modelMapper = new ModelMapper();
-      MethodPaymentDto methodPaymentDto = modelMapper.map(methodPaymentModel, MethodPaymentDto.class);
-      methodPaymentDtos.add(methodPaymentDto);
-      }
-   }
-   return methodPaymentDtos;
- }
-
-public MethodPaymentDto methodPaymentById(Integer id){
-        MethodPaymentModel methodPaymentModel=methodPaymentRepository.findById(id).orElse(null);
-        if(methodPaymentModel!=null){
-            ModelMapper modelMapper = new ModelMapper();
-            return modelMapper.map(methodPaymentModel, MethodPaymentDto.class);}
-     return null;
-}
-
-public Boolean deleteMethodPayment(Integer id){
-        MethodPaymentModel methodPaymentModel=methodPaymentRepository.findById(id).orElse(null);
-        if(methodPaymentModel!=null){
-            methodPaymentRepository.delete(methodPaymentModel);
-            return true;
+    public List<MethodPaymentDto> methodsPaymentByUser(Integer id){
+        List<MethodPaymentModel> methodPaymentModels=methodPaymentRepository.findAll();
+        List<MethodPaymentDto> methodPaymentDtos=new ArrayList<>();
+        ModelMapper modelMapper = new ModelMapper();
+        for (MethodPaymentModel methodPaymentModel : methodPaymentModels) {
+            if(methodPaymentModel.getUserMethodPayment() != null && methodPaymentModel.getUserMethodPayment().getId().equals(id)){
+                MethodPaymentDto methodPaymentDto = modelMapper.map(methodPaymentModel, MethodPaymentDto.class);
+                methodPaymentDto.setId_user(methodPaymentModel.getUserMethodPayment().getId());
+                if (methodPaymentModel.getMoneyMethodPayment() != null) {
+                    methodPaymentDto.setId_money(methodPaymentModel.getMoneyMethodPayment().getId());
+                }
+                methodPaymentDtos.add(methodPaymentDto);
+            }
         }
-        return false;
-}
+        return methodPaymentDtos;
+    }
 
-public Boolean updateMethodPayment(MethodPaymentDto methodPaymentDto){
-        MethodPaymentModel methodPaymentModel=methodPaymentRepository.findById(methodPaymentDto.getId()).orElse(null);
-        if(methodPaymentModel!=null){
-            methodPaymentModel.setNumberCard(methodPaymentDto.getNumberCard());
-            methodPaymentModel.setDateCard(methodPaymentDto.getDateCard());
-            methodPaymentModel.setCvv(methodPaymentDto.getCvv());
-          methodPaymentRepository.save(methodPaymentModel);
-          return true;
+    public MethodPaymentDto methodPaymentById(Integer id){
+        MethodPaymentModel methodPaymentModel=methodPaymentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Método de pago no encontrado con id: " + id));
+        ModelMapper modelMapper = new ModelMapper();
+        MethodPaymentDto dto = modelMapper.map(methodPaymentModel, MethodPaymentDto.class);
+        if (methodPaymentModel.getUserMethodPayment() != null) {
+            dto.setId_user(methodPaymentModel.getUserMethodPayment().getId());
         }
-        return false;
+        if (methodPaymentModel.getMoneyMethodPayment() != null) {
+            dto.setId_money(methodPaymentModel.getMoneyMethodPayment().getId());
+        }
+        return dto;
+    }
+
+    public Boolean deleteMethodPayment(Integer id){
+        MethodPaymentModel methodPaymentModel=methodPaymentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Método de pago no encontrado con id: " + id));
+        methodPaymentRepository.delete(methodPaymentModel);
+        return true;
+    }
+
+    public Boolean updateMethodPayment(MethodPaymentDto methodPaymentDto){
+        MethodPaymentModel methodPaymentModel=methodPaymentRepository.findById(methodPaymentDto.getId())
+                .orElseThrow(() -> new NotFoundException("Método de pago no encontrado con id: " + methodPaymentDto.getId()));
+        methodPaymentModel.setNumberCard(methodPaymentDto.getNumberCard());
+        methodPaymentModel.setDateCard(methodPaymentDto.getDateCard());
+        methodPaymentModel.setCvv(methodPaymentDto.getCvv());
+        methodPaymentRepository.save(methodPaymentModel);
+        return true;
     }
 }

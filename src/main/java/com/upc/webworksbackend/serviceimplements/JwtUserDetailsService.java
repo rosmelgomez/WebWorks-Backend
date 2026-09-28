@@ -20,6 +20,7 @@ public class   JwtUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
     @Autowired
     private CompanyRespository companyRespository;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserModel user= userRepository.findByUsername(username);

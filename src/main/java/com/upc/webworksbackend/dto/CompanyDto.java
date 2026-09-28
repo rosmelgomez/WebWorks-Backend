@@ -1,5 +1,8 @@
 package com.upc.webworksbackend.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -11,7 +14,13 @@ public class CompanyDto {
     private String legalRepresentative;
     private String description;
     private String username;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String currentPassword;
+
     private String rol;
 
     public Integer getId() {
@@ -60,6 +69,14 @@ public class CompanyDto {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getCurrentPassword() {
+        return currentPassword;
+    }
+
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
     }
 
     public String getRol() {

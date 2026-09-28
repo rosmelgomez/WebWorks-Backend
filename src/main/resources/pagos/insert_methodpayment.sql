@@ -1,0 +1,2 @@
+-- Metodos de pago de prueba: numeros de tarjeta de prueba publicados (no son tarjetas reales).
+INSERT INTO public.methodpayment (numbercard, cvv, datecard, id_money, id_user) SELECT '4111111111111111', 123, '2030-12-01 0:0:0.0', 1, (SELECT id FROM public."user" WHERE username = 'ana.torres') WHERE NOT EXISTS (SELECT 1 FROM public.methodpayment WHERE numbercard = '4111111111111111' AND id_user = (SELECT id FROM public."user" WHERE username = 'ana.torres'));

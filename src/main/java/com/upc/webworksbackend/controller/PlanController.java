@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/webworks/plan")
-@CrossOrigin()
+@RequestMapping("/plan")
 public class PlanController {
 
     final PlanService planService;

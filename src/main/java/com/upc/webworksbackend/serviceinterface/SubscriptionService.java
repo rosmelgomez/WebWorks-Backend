@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SubscriptionService {
@@ -33,18 +34,28 @@ final PromotionCodeRepository promotionCodeRepository;
         // Obtención de las entidades relacionadas
         PlanModel planModel = planRepository.findById(subscriptionDbo.getId_plan()).orElse(null);
         UserModel userModel = userRepository.findById(subscriptionDbo.getId_user()).orElse(null);
-        MethodPaymentModel methodPaymentModel = methodPaymentRepository.findById(subscriptionDbo.getId_methodPayment()).orElse(null);
-        PromotionCodeModel promotionCodeModel = promotionCodeRepository.findById(subscriptionDbo.getId_promotionCode()).orElse(null);
+        MethodPaymentModel methodPaymentModel = subscriptionDbo.getId_methodPayment() == null || subscriptionDbo.getId_methodPayment() <= 0
+                ? null : methodPaymentRepository.findById(subscriptionDbo.getId_methodPayment()).orElse(null);
+        PromotionCodeModel promotionCodeModel = subscriptionDbo.getId_promotionCode() == null || subscriptionDbo.getId_promotionCode() <= 0
+                ? null : promotionCodeRepository.findById(subscriptionDbo.getId_promotionCode()).orElse(null);
 
         // Validaciones
-        if (planModel == null || userModel == null) {
-            System.out.println("Plan o usuario no encontrados.");
+        if (planModel == null || userModel == null || subscriptionDbo.getDateStart() == null
+                || subscriptionDbo.getDateEnd() == null
+                || !subscriptionDbo.getDateEnd().after(subscriptionDbo.getDateStart())) {
+            return false;
+        }
+
+        if (planModel.getPrice() > 0 && (methodPaymentModel == null
+                || !methodPaymentModel.getUserMethodPayment().getId().equals(userModel.getId()))) {
             return false;
         }
 
         // Mapeo y asignación de relaciones
         ModelMapper modelMapper = new ModelMapper();
         SubscriptionModel subscriptionModel = modelMapper.map(subscriptionDbo, SubscriptionModel.class);
+        // el frontend envia id 0: forzar alta nueva en lugar de merge de un registro inexistente
+        subscriptionModel.setId(null);
 
         subscriptionModel.setPlanSubscription(planModel);
         subscriptionModel.setUserSubscription(userModel);
@@ -61,22 +72,21 @@ final PromotionCodeRepository promotionCodeRepository;
     }
 
     public SubscriptionCheck SubscriptionActive(Integer id){
-        List<SubscriptionModel> check=subscriptionRepository.SubscriptionsActivate( id, new Date());
+        List<SubscriptionModel> check=subscriptionRepository.findActiveByUser(id, new Date());
         SubscriptionCheck subscriptionCheck=new SubscriptionCheck();
         if(!check.isEmpty()) {
-            for (SubscriptionModel subscriptionModel : check) {
-                subscriptionCheck.setMaxNumberProject(subscriptionModel.getPlanSubscription().getMaxNumberProject());
-                subscriptionCheck.setMaxNumberRepository(subscriptionModel.getPlanSubscription().getMaxNumberRepository());
-                if (subscriptionModel.getAmountTotal() > 0.0) {
-                    subscriptionCheck.setStatus(true);
-                    subscriptionCheck.setAmount(subscriptionModel.getAmountTotal());
-                    return subscriptionCheck;
-                } else {
-                    subscriptionCheck.setAmount(subscriptionModel.getAmountTotal());
-                }
-            }
+            SubscriptionModel subscriptionModel = check.getFirst();
+            subscriptionCheck.setStatus(true);
+            subscriptionCheck.setAmount(subscriptionModel.getAmountTotal());
+            subscriptionCheck.setMaxNumberProject(subscriptionModel.getPlanSubscription().getMaxNumberProject());
+            subscriptionCheck.setMaxNumberRepository(subscriptionModel.getPlanSubscription().getMaxNumberRepository());
+            subscriptionCheck.setPlanName(subscriptionModel.getPlanSubscription().getName());
         }
         return subscriptionCheck;
+    }
+
+    public Optional<SubscriptionModel> activeSubscription(Integer userId) {
+        return subscriptionRepository.findActiveByUser(userId, new Date()).stream().findFirst();
     }
 
     public List<SubscriptionSummaryDto> listSubscriptionsByUser(Integer id) {
@@ -88,22 +98,23 @@ final PromotionCodeRepository promotionCodeRepository;
 
                 if (subscription.getSubscriptionPromotionCode()!=null) {
                     PromotionCodeModel promotionCodeModel =promotionCodeRepository.findById(subscription.getSubscriptionPromotionCode().getId()).orElse(null);
-                    assert promotionCodeModel != null;
-                    subscriptionSummaryDto.setNamePromotionCode(promotionCodeModel.getCode());
-                    subscriptionSummaryDto.setDiscountPercentage(promotionCodeModel.getDiscountPercentage());
+                    if (promotionCodeModel != null) {
+                        subscriptionSummaryDto.setNamePromotionCode(promotionCodeModel.getCode());
+                        subscriptionSummaryDto.setDiscountPercentage(promotionCodeModel.getDiscountPercentage());
+                    }
                 }
                 if (subscription.getPlanSubscription() != null) {
                     subscriptionSummaryDto.setDateStart(subscription.getDateStart());
                     subscriptionSummaryDto.setDateEnd(subscription.getDateEnd());
                     subscriptionSummaryDto.setAmountTotal(subscription.getAmountTotal());
                     subscriptionSummaryDto.setNamePlan(subscription.getPlanSubscription().getName());
-                    subscriptionSummaryDtos.add(subscriptionSummaryDto);
                 }
                 if(subscription.getMethodPaymentSubscription() != null){
                     subscriptionSummaryDto.setNumberMethodPayment(subscription.getMethodPaymentSubscription().getNumberCard());
                 }else{
                     subscriptionSummaryDto.setNumberMethodPayment("");
                 }
+                subscriptionSummaryDtos.add(subscriptionSummaryDto);
             }
         }
 

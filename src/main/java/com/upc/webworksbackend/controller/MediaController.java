@@ -1,5 +1,7 @@
 package com.upc.webworksbackend.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import com.upc.webworksbackend.serviceinterface.FileSystemStorageService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +17,7 @@ import java.nio.file.Files;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/webworks/media")
-@CrossOrigin
+@RequestMapping("/media")
 
 public class MediaController {
 
@@ -28,11 +29,11 @@ public class MediaController {
         this.request = request;
     }
 
-    @PostMapping("/user/addFile")
+    @PreAuthorize("hasAnyAuthority('DEVELOPER','COMPANY')")
+    @PostMapping("/addFile")
     public Map<String,String> addFile(@RequestParam("file") MultipartFile file){
         String path = fileSystemStorageService.store(file);
-        String host = request.getRequestURL().toString().replace(request.getRequestURI(), "");
-        String url= ServletUriComponentsBuilder.fromHttpUrl(host).path("/webworks/media/").path(path).toUriString();
+        String url= ServletUriComponentsBuilder.fromCurrentContextPath().path("/media/").path(path).toUriString();
         return Map.of("url",url);
     }
 

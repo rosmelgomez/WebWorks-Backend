@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "user")
+@Table(name = "\"user\"")
 public class UserModel {
 
     @Id
@@ -45,7 +45,7 @@ public class UserModel {
     private String photo;
 
     @Column(name = "rol", nullable = false)
-    private String rol = "user";
+    private String rol = "DEVELOPER";
 
     public Integer getId() {
         return id;

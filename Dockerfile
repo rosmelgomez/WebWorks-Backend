@@ -1,26 +1,12 @@
-#IMAGEN MOD ELO
-FROM openjdk:17-slim
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn -B -q -e -DskipTests dependency:go-offline
+COPY src ./src
+RUN mvn -B -q -DskipTests package
 
-# RAIZ DE CONTENEDOR
-WORKDIR /root
-
-#COPIAR Y PEGAR ARCHIVOS DENTRO DEL CONTENEOR
-COPY ./pom.xml /root
-COPY ./.mvn /root/.mvn
-COPY ./mvnw /root
-
-#DESCARGAR LAS DEPENDENCIAS
-RUN ./mvnw dependency:go-offline
-
-#COPIAR EL CODIGO FUENTE
-COPY ./src /root/src
-
-#CONSTRUIR APP
-RUN ./mvnw clean package -DskipTests
-
-#
-COPY target/WebWorks-Backend-0.0.1-SNAPSHOT.jar /root/webworks-backend.jar
-
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "/root/webworks-backend.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]

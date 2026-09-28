@@ -10,12 +10,16 @@ import java.util.List;
 
 @Repository
 public interface SubscriptionRepository extends JpaRepository<SubscriptionModel,Integer> {
-    ///SubcripcionActivaHasta la fecha
-    @Query(value = "select s.*\n" +
-            "from subscription s\n" +
-            "join user u on s.id_user=u.id\n" +
-            "where u.id=:id and s.date_end>=:date", nativeQuery = true)
-    List<SubscriptionModel> SubscriptionsActivate(@Param("id") Integer id, @Param("date") Date date);
+    @Query("""
+            select s from SubscriptionModel s
+            join fetch s.planSubscription p
+            where s.userSubscription.id = :userId
+              and s.dateStart <= :now
+              and s.dateEnd >= :now
+            order by p.maxNumberRepository desc, p.maxNumberProject desc, s.dateEnd desc
+            """)
+    List<SubscriptionModel> findActiveByUser(@Param("userId") Integer userId,
+                                             @Param("now") Date now);
 
     /// Subscription by idUser
     List<SubscriptionModel> findSubscriptionModelByUserSubscription_Id(Integer id);

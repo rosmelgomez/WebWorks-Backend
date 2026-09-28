@@ -12,6 +12,7 @@ public class SubscriptionCheck {
     private float amount = -1;
     private int maxNumberRepository;
     private int maxNumberProject;
+    private String planName;
 
     public boolean isStatus() {
         return status;
@@ -43,5 +44,13 @@ public class SubscriptionCheck {
 
     public void setMaxNumberProject(int maxNumberProject) {
         this.maxNumberProject = maxNumberProject;
+    }
+
+    public String getPlanName() {
+        return planName;
+    }
+
+    public void setPlanName(String planName) {
+        this.planName = planName;
     }
 }
